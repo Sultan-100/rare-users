@@ -711,18 +711,30 @@
 			const tokens = getTokens();
 			const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
 			if (tokens.access) headers.Authorization = `Bearer ${tokens.access}`;
-			const res = await fetch(`${API_BASE}${path}`, { ...options, headers });
-			if (res.status === 401 && tokens.refresh && path !== '/auth/refresh') {
-				const refreshed = await refreshAccess(tokens.refresh);
-				if (refreshed) return api(path, options);
+			try {
+				const res = await fetch(`${API_BASE}${path}`, { ...options, headers });
+				if (res.status === 401 && tokens.refresh && path !== '/auth/refresh') {
+					const refreshed = await refreshAccess(tokens.refresh);
+					if (refreshed) return api(path, options);
+				}
+				if (!res.ok) {
+					const text = await res.text().catch(()=> 'error');
+					let errorMsg = text || 'Request failed';
+					try {
+						const json = JSON.parse(text);
+						errorMsg = json.message || json.error || errorMsg;
+					} catch {}
+					throw new Error(errorMsg);
+				}
+				const ct = res.headers.get('content-type') || '';
+				if (ct.includes('application/json')) return res.json();
+				return res.text();
+			} catch (e) {
+				if (e.name === 'TypeError' && e.message.includes('fetch')) {
+					throw new Error(`Cannot connect to backend server. Make sure the backend is running at ${API_BASE.replace('/api', '')}`);
+				}
+				throw e;
 			}
-			if (!res.ok) {
-				const text = await res.text().catch(()=> 'error');
-				throw new Error(text || 'Request failed');
-			}
-			const ct = res.headers.get('content-type') || '';
-			if (ct.includes('application/json')) return res.json();
-			return res.text();
 		}
 
 		async function refreshAccess(refreshToken) {
