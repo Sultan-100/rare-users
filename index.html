@@ -1,0 +1,1466 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Control Panel</title>
+  <style>
+    /* General Styles */
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      height: 100vh;
+      background: linear-gradient(-45deg, #010007, #2c0b3b, #080303);
+      background-size: 200% 100%;
+      animation: moveGradient 45s infinite linear;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow-x: hidden;
+      transition: background 0.5s ease, color 0.5s ease;
+    }
+
+    body.light-mode {
+      background: linear-gradient(-45deg, #a4a4a4, #ffffff, #a7a5a5);
+      color: #333;
+    }
+
+    @keyframes moveGradient {
+      0% {
+        background-position: 0% 50%;
+      }
+
+      50% {
+        background-position: 100% 50%;
+      }
+
+      100% {
+        background-position: 0% 50%;
+      }
+    }
+
+    /* Top control bar */
+    .controls {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      z-index: 1200;
+    }
+
+    .controls select {
+      padding: 8px 10px;
+      border-radius: 8px;
+      border: none;
+      background: rgba(255,255,255,0.15);
+      color: inherit;
+      backdrop-filter: blur(4px);
+    }
+
+    /* Theme Toggle Button */
+    #theme-toggle {
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+			color: inherit;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      transition: background 0.3s ease;
+			z-index: 1100;
+    }
+
+    #theme-toggle:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+		/* Auth Pages */
+    .auth-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      width: 100%;
+    }
+
+    .auth-form {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+      text-align: center;
+			width: 320px;
+			backdrop-filter: blur(6px);
+		}
+
+		.auth-form h2 {
+			margin: 0 0 10px 0;
+    }
+
+    .auth-form input {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: none;
+      border-radius: 5px;
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+    }
+
+		body.light-mode .auth-form input {
+			color: #222;
+    }
+
+    .auth-form button {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: none;
+      border-radius: 5px;
+      background: linear-gradient(45deg, #ff416c, #ff4b2b);
+      color: white;
+      cursor: pointer;
+    }
+
+    .auth-form button:hover {
+      background: linear-gradient(45deg, #ff4b2b, #ff416c);
+    }
+
+    .auth-form a {
+			color: #ff9ab0;
+      text-decoration: none;
+      font-size: 14px;
+    }
+
+    .auth-form a:hover {
+      text-decoration: underline;
+    }
+
+		/* Hidden */
+    .hidden {
+			display: none !important;
+		}
+
+		/* App Layout */
+		.app-page {
+			width: 100%;
+			height: 100vh;
+      display: none;
+    }
+
+		.app-page.active {
+			display: block;
+		}
+
+		.sidebar {
+      position: fixed;
+			top: 0;
+			left: 0;
+			width: 250px;
+			height: 100%;
+			background: rgba(0, 0, 0, 0.8);
+			color: white;
+			padding-top: 20px;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: flex-start;
+			box-shadow: 2px 0 5px rgba(0, 0, 0, 0.5);
+			transform: translateX(-100%);
+			transition: transform 0.3s ease;
+			z-index: 1000;
+			backdrop-filter: blur(6px);
+		}
+
+		.sidebar.active {
+			transform: translateX(0);
+		}
+
+		.sidebar a {
+      color: white;
+      text-decoration: none;
+			padding: 10px;
+			margin: 8px;
+			width: 85%;
+			text-align: center;
+			background: #444;
+      border-radius: 6px;
+			font-weight: bold;
+			transition: background 0.2s ease, transform 0.2s ease;
+		}
+
+		.sidebar a:hover {
+			background: #666;
+			transform: translateY(-1px);
+		}
+
+		.hamburger-menu {
+			position: fixed;
+			top: 18px;
+			left: 18px;
+			width: 34px;
+			height: 28px;
+			cursor: pointer;
+			z-index: 1100;
+		}
+
+		.hamburger-menu .bar {
+			width: 100%;
+			height: 4px;
+			background-color: currentColor;
+			margin: 5px 0;
+			border-radius: 4px;
+			transition: transform 0.3s ease;
+    }
+
+    .content {
+			margin-top: 80px;
+			width: min(900px, 90%);
+			margin-left: auto;
+			margin-right: auto;
+      display: flex;
+      justify-content: center;
+			align-items: flex-start;
+			min-height: calc(100vh - 120px);
+    }
+
+    .section {
+      display: none;
+			text-align: left;
+      background: rgba(255, 255, 255, 0.1);
+			padding: 22px;
+      border-radius: 12px;
+			box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
+			width: 100%;
+			animation: fadeIn 0.4s ease-in-out;
+			backdrop-filter: blur(6px);
+    }
+
+    .section.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+				transform: translateY(-6px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+		/* Products */
+		.products-grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+			gap: 14px;
+		}
+
+		.product-card {
+			background: rgba(0, 0, 0, 0.25);
+			border: 1px solid rgba(255, 255, 255, 0.15);
+			border-radius: 10px;
+			padding: 14px;
+		}
+
+		body.light-mode .product-card {
+			background: rgba(255, 255, 255, 0.7);
+			border: 1px solid rgba(0, 0, 0, 0.1);
+		}
+
+		.product-head {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+		}
+
+		.heart {
+      cursor: pointer;
+			font-size: 20px;
+			line-height: 1;
+			user-select: none;
+		}
+
+		.heart::before {
+			content: '\2661';
+			color: #ccc;
+		}
+
+		.heart.filled::before {
+			content: '\2665';
+			color: #ff416c;
+		}
+
+		.muted {
+			opacity: 0.75;
+			font-size: 14px;
+		}
+
+		ul.clean {
+			list-style: none;
+			padding-left: 0;
+		}
+
+		ul.clean li {
+			padding: 6px 0;
+			border-bottom: 1px dashed rgba(255, 255, 255, 0.2);
+		}
+
+		body.light-mode ul.clean li {
+			border-bottom-color: rgba(0, 0, 0, 0.15);
+		}
+
+		.row {
+      display: flex;
+			gap: 10px;
+      align-items: center;
+			flex-wrap: wrap;
+		}
+
+		.row input, .row button, .row select {
+			padding: 10px;
+			border-radius: 6px;
+			border: none;
+		}
+
+		.btn {
+			padding: 10px 12px;
+			border-radius: 6px;
+			border: none;
+			cursor: pointer;
+			background: linear-gradient(45deg, #ff416c, #ff4b2b);
+      color: white;
+		}
+
+		.btn.secondary {
+			background: #555;
+		}
+
+		/* Customer Service Overlay */
+		.cs-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 1500; }
+		.cs-card { background: rgba(255,255,255,0.1); padding: 18px; border-radius: 12px; min-width: 280px; box-shadow: 0 0 20px rgba(0,0,0,0.5); backdrop-filter: blur(8px); }
+		.cs-card h3 { margin-top: 0; }
+		.cs-close { float: right; background: transparent; border: none; color: inherit; font-size: 20px; cursor: pointer; }
+
+		/* Cards */
+		.card-grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+			gap: 14px;
+		}
+
+		.card {
+			background: rgba(0,0,0,0.25);
+			border: 1px solid rgba(255,255,255,0.15);
+			border-radius: 12px;
+			padding: 14px;
+			box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+		}
+
+		body.light-mode .card {
+			background: rgba(255,255,255,0.7);
+			border: 1px solid rgba(0,0,0,0.08);
+		}
+
+		/* Contact card */
+		.contact-card { display: flex; gap: 12px; align-items: flex-start; }
+		.contact-card .emoji { font-size: 28px; }
+
+		/* Wishlist cards */
+		#wishlist-list.card-grid li { list-style: none; }
+
+		/* Circular logo for platform */
+		.circle-icon { width:34px; height:34px; border-radius:50%; overflow:hidden; display:flex; align-items:center; justify-content:center; background:#222; color:#fff; font-weight:bold; }
+		.circle-icon img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
+
+			/* Admin Feedback Box */
+			#admin-feedback .feedback-box { min-height: 420px; max-height: 65vh; overflow: auto; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; padding: 12px; }
+			body.light-mode #admin-feedback .feedback-box { background: rgba(255,255,255,0.7); border-color: rgba(0,0,0,0.1); }
+  </style>
+</head>
+
+<body>
+  <div class="controls">
+    <select id="lang-select" title="Language">
+      <option value="en">English</option>
+      <option value="ar">العربية</option>
+      <option value="fr">Français</option>
+    </select>
+    <select id="currency-select" title="Currency">
+      <option value="USD">USD</option>
+      <option value="EUR">EUR</option>
+      <option value="GBP">GBP</option>
+      <option value="KWD">KWD</option>
+      <option value="AED">AED</option>
+      <option value="SAR">SAR</option>
+    </select>
+    <button id="theme-toggle" title="Toggle theme">🌓</button>
+  </div>
+
+	<!-- Login -->
+  <div class="auth-container" id="login-page">
+    <div class="auth-form">
+      <h2 data-i18n="login">Login</h2>
+      <input type="text" id="login-username" data-i18n="username" placeholder="Username">
+      <input type="password" id="login-password" data-i18n="password" placeholder="Password">
+			<button class="btn" id="login-btn" data-i18n="login">Login</button>
+			<p class="muted"><span data-i18n="noAccount">Don't have an account?</span>
+				<a href="#" id="go-signup" data-i18n="signup">Sign Up</a>
+			</p>
+    </div>
+  </div>
+
+	<!-- Sign Up -->
+  <div class="auth-container hidden" id="signup-page">
+    <div class="auth-form">
+      <h2 data-i18n="signup">Sign Up</h2>
+      <input type="text" id="signup-username" data-i18n="username" placeholder="Username">
+      <input type="password" id="signup-password" data-i18n="password" placeholder="Password">
+			<button class="btn" id="signup-btn" data-i18n="createAccount">Create Account</button>
+			<p class="muted"><span data-i18n="haveAccount">Already have an account?</span>
+				<a href="#" id="go-login" data-i18n="login">Login</a>
+			</p>
+    </div>
+  </div>
+
+<!-- Admin Page -->
+	<div id="admin-page" class="app-page">
+		<div class="hamburger-menu" id="admin-hamburger">
+			<div class="bar"></div>
+			<div class="bar"></div>
+			<div class="bar"></div>
+  </div>
+
+		<nav class="sidebar" id="admin-sidebar">
+			<a href="#" data-section="admin-add-product" data-i18n="manageProducts">🛠 Manage Products</a>
+			<a href="#" data-section="admin-manage-users" data-i18n="manageUsers">👥 Manage Users</a>
+			<a href="#" data-section="admin-feedback" data-i18n="feedbackInbox">📬 Feedback Inbox</a>
+			<a href="#" id="cs-open-admin" data-i18n="customerService">📞 Customer Service</a>
+			<a href="#" id="admin-logout" data-i18n="logout">🔴 Logout</a>
+		</nav>
+
+  <div class="content">
+			<div id="admin-add-product" class="section active">
+				<h2 data-i18n="manageProducts">Manage Products</h2>
+				<div class="row" style="margin-top:10px;">
+					<input type="text" id="product-name" placeholder="Product Name">
+					<input type="number" id="product-price" placeholder="Product Price" min="0" step="0.01">
+					<select id="product-platform">
+						<option value="instagram">Instagram</option>
+						<option value="tiktok">TikTok</option>
+					</select>
+					<button class="btn" id="add-product-btn">Add</button>
+				</div>
+				<p class="muted">Products are visible to all users.</p>
+				<h3 style="margin-top:14px;">Current Products</h3>
+				<ul id="admin-products" class="clean"></ul>
+    </div>
+
+			<div id="admin-manage-users" class="section">
+				<h2 data-i18n="manageUsers">Manage Users</h2>
+				<div class="row" style="margin-bottom: 16px;">
+					<input type="text" id="user-search" placeholder="Search users..." style="flex: 1; padding: 8px; border-radius: 6px; border: none; background: rgba(255,255,255,0.2); color: inherit;">
+				</div>
+				<div id="admin-list-section" style="margin-bottom: 24px;">
+					<h3 style="margin: 0 0 12px 0; color: #ff9ab0; font-size: 16px;">👑 Administrators</h3>
+					<ul id="admin-list" class="clean"></ul>
+				</div>
+				<div id="user-list-section">
+					<h3 style="margin: 0 0 12px 0; color: #4CAF50; font-size: 16px;">👥 Users</h3>
+					<ul id="user-list" class="clean"></ul>
+				</div>
+			</div>
+
+			<div id="admin-feedback" class="section">
+				<h2 data-i18n="feedbackInbox">Feedback Inbox</h2>
+				<div class="feedback-box">
+					<ul id="feedback-inbox" class="clean"></ul>
+    </div>
+    </div>
+  </div>
+</div>
+
+<!-- User Page -->
+	<div id="user-page" class="app-page">
+		<div class="hamburger-menu" id="user-hamburger">
+			<div class="bar"></div>
+			<div class="bar"></div>
+			<div class="bar"></div>
+  </div>
+
+		<nav class="sidebar" id="user-sidebar">
+			<a href="#" data-section="user-view-products" data-i18n="products">🛒 View Products</a>
+			<a href="#" data-section="user-view-wishlist" data-i18n="wishlist">💖 Your Wishlist</a>
+			<a href="#" data-section="user-feedback" data-i18n="feedback">📝 Feedback</a>
+			<a href="#" data-section="contact-section" data-i18n="customerService">📞 Contact</a>
+			<a href="#" id="cs-open-user" data-i18n="customerService">📞 Customer Service</a>
+			<a href="#" id="user-logout" data-i18n="logout">🔴 Logout</a>
+		</nav>
+
+  <div class="content">
+			<div id="user-view-products" class="section active">
+      <h2 data-i18n="products">Products</h2>
+				<div class="row" style="margin:8px 0;">
+					<select id="filter-select">
+						<option value="name-asc">A → Z</option>
+						<option value="name-desc">Z → A</option>
+						<option value="price-asc">Price Low → High</option>
+						<option value="price-desc">Price High → Low</option>
+					</select>
+					<select id="sort-select">
+						<option value="ig-first">Instagram First</option>
+						<option value="tt-first">TikTok First</option>
+					</select>
+				</div>
+				<div id="products-grid" class="products-grid" style="margin-top:12px;"></div>
+    </div>
+
+			<div id="user-view-wishlist" class="section">
+      <h2 data-i18n="wishlist">Your Wishlist</h2>
+				<ul id="wishlist-list" class="card-grid" style="margin-top:12px; padding:0;"></ul>
+    </div>
+
+			<div id="user-feedback" class="section">
+      <h2 data-i18n="feedback">Feedback</h2>
+				<form id="feedback-form" style="margin-top:10px; display:flex; flex-direction:column; gap:10px;">
+					<textarea id="feedback-message" placeholder="Your message" rows="3" cols="30" data-i18n="messagePlaceholder"></textarea>
+					<button class="btn" type="submit" data-i18n="send">Send</button>
+				</form>
+				<ul id="feedback-history" class="clean" style="margin-top:16px;"></ul>
+    </div>
+
+			<div id="contact-section" class="section">
+				<h2 data-i18n="customerService">Customer Service</h2>
+				<div class="card contact-card">
+					<div class="emoji">🤝</div>
+					<div>
+						<p class="muted">We’re here to help. Reach us anytime.</p>
+						<p>Email: <a href="mailto:sul1001moh@gmail.com">sul1001moh@gmail.com</a></p>
+						<p>WhatsApp: <a href="https://wa.me/96528833" target="_blank">+96528833</a></p>
+					</div>
+				</div>
+    </div>
+  </div>
+</div>
+
+	<div class="cs-overlay" id="cs-overlay">
+		<div class="cs-card">
+			<button class="cs-close" id="cs-close">×</button>
+			<h3>Customer Service</h3>
+			<p>Email: <a href="mailto:sul1001moh@gmail.com">sul1001moh@gmail.com</a></p>
+			<p>WhatsApp: <a href="https://wa.me/96528833" target="_blank">+ 96528833</a></p>
+		</div>
+	</div>
+<script>
+		// i18n and currency
+		const translations = {
+			en: {
+				login: 'Login',
+				signup: 'Sign Up',
+				createAccount: 'Create Account',
+				username: 'Username',
+				password: 'Password',
+				noAccount: "Don't have an account?",
+				haveAccount: 'Already have an account?',
+				products: 'Products',
+				wishlist: 'Your Wishlist',
+				feedback: 'Feedback',
+				send: 'Send',
+				messagePlaceholder: 'Your message',
+				manageProducts: 'Manage Products',
+				manageUsers: 'Manage Users',
+				feedbackInbox: 'Feedback Inbox',
+				logout: 'Logout',
+				customerService: 'Customer Service',
+				price: 'Price'
+			},
+			ar: {
+				login: 'تسجيل الدخول',
+				signup: 'إنشاء حساب',
+				createAccount: 'إنشاء حساب',
+				username: 'اسم المستخدم',
+				password: 'كلمة المرور',
+				noAccount: 'ليس لديك حساب؟',
+				haveAccount: 'لديك حساب بالفعل؟',
+				products: 'المنتجات',
+				wishlist: 'قائمة الرغبات',
+				feedback: 'ملاحظات',
+				send: 'إرسال',
+				messagePlaceholder: 'رسالتك',
+				manageProducts: 'إدارة المنتجات',
+				manageUsers: 'إدارة المستخدمين',
+				feedbackInbox: 'صندوق الملاحظات',
+				logout: 'تسجيل الخروج',
+				customerService: 'خدمة العملاء',
+				price: 'السعر'
+			},
+			fr: {
+				login: 'Connexion',
+				signup: "S'inscrire",
+				createAccount: 'Créer un compte',
+				username: "Nom d’utilisateur",
+				password: 'Mot de passe',
+				noAccount: "Pas de compte ?",
+				haveAccount: 'Déjà un compte ?',
+				products: 'Produits',
+				wishlist: 'Liste de souhaits',
+				feedback: 'Feedback',
+				send: 'Envoyer',
+				messagePlaceholder: 'Votre message',
+				manageProducts: 'Gérer les produits',
+				manageUsers: 'Gérer les utilisateurs',
+				feedbackInbox: 'Boîte de feedback',
+				logout: 'Déconnexion',
+				customerService: 'Service client',
+				price: 'Prix'
+			},
+		};
+
+		const currencyRates = {
+			USD: 1,
+			EUR: 0.92,
+			GBP: 0.79,
+			KWD: 0.31,
+			AED: 3.67,
+			SAR: 3.75,
+		};
+
+		let currentLang = localStorage.getItem('lang') || 'en';
+		let currentCurrency = localStorage.getItem('currency') || 'USD';
+
+		function setLanguage(lang) {
+			currentLang = translations[lang] ? lang : 'en';
+			localStorage.setItem('lang', currentLang);
+			document.documentElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
+			applyTranslations();
+		}
+
+		function t(key) {
+			return (translations[currentLang] && translations[currentLang][key]) || translations.en[key] || key;
+		}
+
+		function applyTranslations() {
+			document.querySelectorAll('[data-i18n]').forEach(el => {
+				const key = el.getAttribute('data-i18n');
+				if (el.placeholder !== undefined && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA')) {
+					el.placeholder = t(key);
+				} else {
+					el.textContent = t(key);
+				}
+			});
+		}
+
+		function setCurrency(cur) {
+			currentCurrency = currencyRates[cur] ? cur : 'USD';
+			localStorage.setItem('currency', currentCurrency);
+			renderProducts();
+			renderUserWishlist();
+			renderAdminProducts();
+		}
+
+		function formatPrice(amount) {
+			const rate = currencyRates[currentCurrency] || 1;
+			const converted = Number(amount) * rate;
+			return new Intl.NumberFormat(currentLang === 'ar' ? 'ar' : 'en', {
+				style: 'currency',
+				currency: currentCurrency,
+				minimumFractionDigits: 2,
+			}).format(converted);
+		}
+
+		// API helpers
+		const API_BASE = localStorage.getItem('apiBase') || 'http://localhost:4000/api';
+
+		function getTokens() {
+			return {
+				access: localStorage.getItem('accessToken'),
+				refresh: localStorage.getItem('refreshToken'),
+			};
+		}
+
+		function setTokens(access, refresh) {
+			if (access) localStorage.setItem('accessToken', access);
+			if (refresh) localStorage.setItem('refreshToken', refresh);
+		}
+
+		function clearTokens() {
+			localStorage.removeItem('accessToken');
+			localStorage.removeItem('refreshToken');
+		}
+
+		let state = {
+			user: null,
+			products: [],
+			wishlist: [],
+			feedback: [],
+		};
+
+		async function api(path, options = {}) {
+			const tokens = getTokens();
+			const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
+			if (tokens.access) headers.Authorization = `Bearer ${tokens.access}`;
+			const res = await fetch(`${API_BASE}${path}`, { ...options, headers });
+			if (res.status === 401 && tokens.refresh && path !== '/auth/refresh') {
+				const refreshed = await refreshAccess(tokens.refresh);
+				if (refreshed) return api(path, options);
+			}
+			if (!res.ok) {
+				const text = await res.text().catch(()=> 'error');
+				throw new Error(text || 'Request failed');
+			}
+			const ct = res.headers.get('content-type') || '';
+			if (ct.includes('application/json')) return res.json();
+			return res.text();
+		}
+
+		async function refreshAccess(refreshToken) {
+			try {
+				const res = await fetch(`${API_BASE}/auth/refresh`, {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ refresh: refreshToken })
+				});
+				if (!res.ok) return false;
+				const data = await res.json();
+				if (data.access) setTokens(data.access);
+				return !!data.access;
+			} catch {
+				return false;
+			}
+		}
+
+		async function loadProducts() {
+			try {
+				state.products = await api('/products');
+				renderProducts();
+				renderAdminProducts();
+			} catch (e) {
+				console.error(e);
+			}
+		}
+
+		async function loadWishlist() {
+			if (!state.user) return;
+			try {
+				state.wishlist = await api('/wishlist');
+				renderUserWishlist();
+			} catch (e) { console.error(e); }
+		}
+
+		// Theme
+		(function initTheme() {
+			const saved = localStorage.getItem('theme');
+			if (saved === 'light') document.body.classList.add('light-mode');
+			const toggle = document.getElementById('theme-toggle');
+			toggle.addEventListener('click', () => {
+				document.body.classList.toggle('light-mode');
+				localStorage.setItem('theme', document.body.classList.contains('light-mode') ? 'light' : 'dark');
+			});
+		})();
+
+		// Language & currency selects
+		(function initLocaleControls() {
+			const langSel = document.getElementById('lang-select');
+			const curSel = document.getElementById('currency-select');
+			if (langSel) {
+				langSel.value = currentLang;
+				langSel.addEventListener('change', (e) => setLanguage(e.target.value));
+			}
+			if (curSel) {
+				curSel.value = currentCurrency;
+				curSel.addEventListener('change', (e) => setCurrency(e.target.value));
+			}
+			applyTranslations();
+		})();
+
+		// Authentication UI
+		const loginPage = document.getElementById('login-page');
+		const signupPage = document.getElementById('signup-page');
+
+		document.getElementById('go-signup').addEventListener('click', (e) => {
+			e.preventDefault();
+			loginPage.classList.add('hidden');
+			signupPage.classList.remove('hidden');
+		});
+
+		document.getElementById('go-login').addEventListener('click', (e) => {
+			e.preventDefault();
+			signupPage.classList.add('hidden');
+			loginPage.classList.remove('hidden');
+		});
+
+		async function signUp(username, password) {
+			if (!username || !password) { 
+				showNotification('Input Required', 'Please enter username and password.', 'warning');
+				return; 
+			}
+			if (!/^[A-Za-z0-9_]+$/.test(username)) {
+				showNotification('Invalid Username', 'Username must contain only English letters, numbers, and underscores.', 'warning');
+				return;
+			}
+			if (String(password).length < 8) {
+				showNotification('Weak Password', 'Password must be at least 8 characters.', 'warning');
+				return;
+			}
+			try {
+				const data = await api('/auth/signup', {
+					method: 'POST',
+					body: JSON.stringify({ username, password }),
+				});
+				setTokens(data.tokens.access, data.tokens.refresh);
+				state.user = data.user;
+				showNotification('Account Created', 'Account created successfully!', 'success');
+				await loadInitialData();
+				showAppForCurrentUser();
+			} catch (e) {
+				showNotification('Signup Failed', e.message, 'error');
+			}
+		}
+
+		async function login(username, password) {
+			if (!/^[A-Za-z0-9_]+$/.test(username)) {
+				showNotification('Invalid Username', 'Username must be in English letters/numbers/underscores.', 'error');
+				return;
+			}
+			try {
+				const data = await api('/auth/login', {
+					method: 'POST',
+					body: JSON.stringify({ username, password }),
+				});
+				setTokens(data.tokens.access, data.tokens.refresh);
+				state.user = data.user;
+				showNotification('Welcome Back', `Welcome back, ${username}!`, 'success');
+				await loadInitialData();
+				showAppForCurrentUser();
+			} catch (e) {
+				showNotification('Login Failed', e.message, 'error');
+			}
+		}
+
+		document.getElementById('signup-btn').addEventListener('click', () => {
+			signUp(
+				document.getElementById('signup-username').value.trim(),
+				document.getElementById('signup-password').value
+			);
+		});
+
+		document.getElementById('login-btn').addEventListener('click', () => {
+			login(
+				document.getElementById('login-username').value.trim(),
+				document.getElementById('login-password').value
+			);
+		});
+
+		// App pages
+		const adminPage = document.getElementById('admin-page');
+		const userPage = document.getElementById('user-page');
+
+		function logout() {
+			state.user = null;
+			clearTokens();
+			// Reset UI
+			adminPage.classList.remove('active');
+			userPage.classList.remove('active');
+			signupPage.classList.add('hidden');
+			loginPage.classList.remove('hidden');
+			showNotification('Logged Out', 'Logged out successfully!', 'info');
+		}
+
+		document.getElementById('admin-logout').addEventListener('click', (e) => { e.preventDefault(); logout(); });
+		document.getElementById('user-logout').addEventListener('click', (e) => { e.preventDefault(); logout(); });
+
+		function showAppForCurrentUser() {
+			const current = state.user;
+			if (!current) return;
+			loginPage.classList.add('hidden');
+			signupPage.classList.add('hidden');
+			if (current.is_admin) {
+				adminPage.classList.add('active');
+				userPage.classList.remove('active');
+				renderAdminUsers();
+				renderFeedbackInbox();
+				renderAdminProducts();
+			} else {
+				userPage.classList.add('active');
+				adminPage.classList.remove('active');
+				renderProducts();
+				renderUserWishlist();
+			}
+		}
+
+		// Sidebar toggle
+		function wireSidebarToggle(hamburgerId, sidebarId) {
+			const burger = document.getElementById(hamburgerId);
+			const sidebar = document.getElementById(sidebarId);
+			burger.addEventListener('click', () => sidebar.classList.toggle('active'));
+			// Close sidebar when clicking a nav link
+			sidebar.querySelectorAll('a[data-section]').forEach(a => a.addEventListener('click', () => {
+				sidebar.classList.remove('active');
+			}));
+		}
+
+		wireSidebarToggle('admin-hamburger', 'admin-sidebar');
+		wireSidebarToggle('user-hamburger', 'user-sidebar');
+
+		// Section switching
+		function wireSectionNavigation(containerId) {
+			const container = document.getElementById(containerId);
+			const links = container.querySelectorAll('a[data-section]');
+			links.forEach(link => link.addEventListener('click', (e) => {
+				e.preventDefault();
+				const sectionId = link.getAttribute('data-section');
+				document.querySelectorAll(`#${containerId.replace('-sidebar','-page')} .section`).forEach(sec => sec.classList.remove('active'));
+    document.getElementById(sectionId).classList.add('active');
+			}));
+		}
+
+		wireSectionNavigation('admin-sidebar');
+		wireSectionNavigation('user-sidebar');
+
+		// Admin: Add Product
+		document.getElementById('add-product-btn').addEventListener('click', async () => {
+			const name = document.getElementById('product-name').value.trim();
+			const priceRaw = document.getElementById('product-price').value;
+			const price = Number(priceRaw);
+			const platform = (document.getElementById('product-platform')?.value || 'instagram');
+			if (!name || !(price >= 0)) { 
+				showNotification('Input Required', 'Enter a valid name and price.', 'warning');
+				return; 
+			}
+			try {
+				await api('/products', {
+					method: 'POST',
+					body: JSON.stringify({ name, price, platform }),
+				});
+				document.getElementById('product-name').value = '';
+				document.getElementById('product-price').value = '';
+				showNotification('Product Added', 'Product added successfully!', 'success');
+				await loadProducts();
+			} catch (e) {
+				showNotification('Error', e.message, 'error');
+			}
+		});
+
+		// Admin: Manage Users
+		async function toggleBlockUser(userId, block) {
+			try {
+				await api(`/admin/accounts/${userId}/block`, {
+					method: 'POST',
+					body: JSON.stringify({ block }),
+				});
+				await loadAccounts();
+				showNotification('User Updated', block ? 'User blocked' : 'User unblocked', 'success');
+			} catch (e) {
+				showNotification('Error', e.message, 'error');
+			}
+		}
+
+		let accountsCache = [];
+
+		async function loadAccounts() {
+			if (!state.user?.is_admin) return;
+			try {
+				accountsCache = await api('/admin/accounts');
+				renderAdminUsers();
+			} catch (e) {
+				showNotification('Error', e.message, 'error');
+			}
+		}
+
+		async function loadInitialData() {
+			await loadProducts();
+			if (state.user) {
+				await Promise.all([
+					loadWishlist(),
+					state.user.is_admin ? loadAccounts() : Promise.resolve(),
+					state.user.is_admin ? loadFeedback() : Promise.resolve(),
+				]);
+			}
+		}
+
+		// User: Products
+		function isInWishlist(productId) {
+			return state.wishlist.some(i => Number(i.product_id) === Number(productId));
+		}
+
+		async function toggleWishlist(product) {
+			if (!state.user) { showNotification('Login required', 'Please login first.', 'warning'); return; }
+			const inList = isInWishlist(product.id);
+			try {
+				if (inList) {
+					await api(`/wishlist/${product.id}`, { method: 'DELETE' });
+				} else {
+					await api('/wishlist', { method: 'POST', body: JSON.stringify({ product_id: product.id }) });
+				}
+				await loadWishlist();
+			} catch (e) {
+				showNotification('Error', e.message, 'error');
+			}
+		}
+
+		function buildWhatsAppUrl(product, username) {
+			const phone = '96528833';
+			const msg = `Hello, I'm ${username || 'guest'}. I would like to buy ${product.name} (${product.platform}) for $${Number(product.price).toFixed(2)}.`;
+			return `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
+		}
+
+		function renderProducts() {
+			const grid = document.getElementById('products-grid');
+			grid.innerHTML = '';
+			const products = applyFilterAndSort(state.products || []);
+			const current = state.user;
+			if (products.length === 0) { grid.innerHTML = '<p class="muted">No products yet.</p>'; return; }
+			products.forEach(p => {
+				const card = document.createElement('div');
+				card.className = 'product-card';
+				const filled = current ? isInWishlist(p.id) : false;
+				const logoSrc = p.platform === 'tiktok' ? 'tiktok.jpg' : 'Instagram.jpg';
+				card.innerHTML = `
+					<div class="product-head">
+						<div style="display:flex;align-items:center;gap:10px;">
+							<span class="circle-icon"><img src="${logoSrc}" alt="${p.platform}"></span>
+							<h3 style="margin:0;">${p.name}</h3>
+    </div>
+						<span class="heart ${filled ? 'filled' : ''}" title="Toggle wishlist"></span>
+    </div>
+					<div class="muted">${t('price')}: ${formatPrice(Number(p.price))}</div>
+					<div class="row" style="margin-top:8px;">
+						<a href="#" class="btn" data-action="buy">Buy on WhatsApp</a>
+    </div>
+				`;
+				card.querySelector('.heart').addEventListener('click', () => toggleWishlist(p));
+				card.querySelector('[data-action="buy"]').addEventListener('click', (e) => {
+					e.preventDefault();
+					const url = buildWhatsAppUrl(p, current && current.username);
+					window.open(url, '_blank');
+				});
+				grid.appendChild(card);
+			});
+		}
+
+		// User: Wishlist
+		function renderUserWishlist() {
+			const ul = document.getElementById('wishlist-list');
+			ul.innerHTML = '';
+			const current = state.user;
+			if (!current) { ul.innerHTML = '<li class="muted">Login to see wishlist.</li>'; return; }
+			const items = state.wishlist;
+			if (!items || items.length === 0) {
+				ul.innerHTML = '<li class="muted">Your wishlist is empty.</li>';
+				return;
+			}
+			items.forEach(item => {
+				const li = document.createElement('li');
+				li.className = 'card';
+				li.innerHTML = `
+					<div class="row" style="justify-content:space-between; align-items:flex-start;">
+						<div>
+							<div style="font-weight:600;">${item.name}</div>
+							<div class="muted">${formatPrice(Number(item.price))}</div>
+							<div class="muted">${item.platform}</div>
+						</div>
+						<button class="btn secondary">Remove</button>
+					</div>
+				`;
+				li.querySelector('button').addEventListener('click', () => {
+					toggleWishlist({ id: item.product_id, name: item.name, price: item.price, platform: item.platform });
+				});
+				ul.appendChild(li);
+			});
+		}
+
+		// Initialize app on load
+		document.addEventListener('DOMContentLoaded', async () => {
+			const tokens = getTokens();
+			if (tokens.access) {
+				try {
+					const me = await api('/me');
+					state.user = me;
+					await loadInitialData();
+					showAppForCurrentUser();
+				} catch (e) {
+					console.warn('Session restore failed', e);
+					clearTokens();
+					loginPage.classList.remove('hidden');
+					signupPage.classList.add('hidden');
+				}
+			} else {
+				loginPage.classList.remove('hidden');
+				signupPage.classList.add('hidden');
+				await loadProducts();
+			}
+		});
+
+		// Wire customer service overlay
+		(function() {
+			const overlay = document.getElementById('cs-overlay');
+			const closeBtn = document.getElementById('cs-close');
+			const openAdmin = document.getElementById('cs-open-admin');
+			const openUser = document.getElementById('cs-open-user');
+			if (openAdmin) openAdmin.addEventListener('click', (e) => { e.preventDefault(); overlay.style.display = 'flex'; });
+			if (openUser) openUser.addEventListener('click', (e) => { e.preventDefault(); overlay.style.display = 'flex'; });
+			if (closeBtn) closeBtn.addEventListener('click', () => { overlay.style.display = 'none'; });
+			if (overlay) overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.style.display = 'none'; });
+		})();
+
+		// Product filter/sort controls
+		let filterMode = 'name-asc';
+		let sortMode = 'ig-first';
+		function applyFilterAndSort(list) {
+			let items = [...list];
+			switch (filterMode) {
+				case 'name-asc': items.sort((a,b)=>a.name.localeCompare(b.name)); break;
+				case 'name-desc': items.sort((a,b)=>b.name.localeCompare(a.name)); break;
+				case 'price-asc': items.sort((a,b)=>Number(a.price)-Number(b.price)); break;
+				case 'price-desc': items.sort((a,b)=>Number(b.price)-Number(a.price)); break;
+			}
+			if (sortMode === 'ig-first') {
+				items = items.sort((a,b)=>{
+					const ai = a.name.toLowerCase().includes('insta') ? 0 : 1;
+					const bi = b.name.toLowerCase().includes('insta') ? 0 : 1;
+					return ai - bi;
+				});
+			} else if (sortMode === 'tt-first') {
+				items = items.sort((a,b)=>{
+					const ai = a.name.toLowerCase().includes('tiktok') ? 0 : 1;
+					const bi = b.name.toLowerCase().includes('tiktok') ? 0 : 1;
+					return ai - bi;
+				});
+			}
+			return items;
+		}
+		// Patch renderProducts to use filter/sort if controls exist
+		const _renderProducts = renderProducts;
+		renderProducts = function() {
+			const hasControls = document.getElementById('filter-select') && document.getElementById('sort-select');
+			if (!hasControls) return _renderProducts();
+			const grid = document.getElementById('products-grid');
+			grid.innerHTML = '';
+			const products = applyFilterAndSort(state.products || []);
+			const current = state.user;
+			if (products.length === 0) { grid.innerHTML = '<p class="muted">No products yet.</p>'; return; }
+			products.forEach(p => {
+				const card = document.createElement('div');
+				card.className = 'product-card';
+				const filled = current ? isInWishlist(p.id) : false;
+				card.innerHTML = `
+					<div class="product-head">
+						<div style="display:flex;align-items:center;gap:10px;">
+							<span class="circle-icon"><img src="${p.platform === 'tiktok' ? 'tiktok.jpg' : 'Instagram.jpg'}" alt="${p.platform}"></span>
+							<h3 style="margin:0;">${p.name}</h3>
+  </div>
+						<span class="heart ${filled ? 'filled' : ''}" title="Toggle wishlist"></span>
+    </div>
+					<div class="muted">${t('price')}: ${formatPrice(Number(p.price))}</div>
+					<div class="row" style="margin-top:8px;">
+						<a href="#" class="btn" data-action="buy">Buy on WhatsApp</a>
+    </div>
+				`;
+				card.querySelector('.heart').addEventListener('click', () => toggleWishlist(p));
+				card.querySelector('[data-action="buy"]').addEventListener('click', (e) => {
+					e.preventDefault();
+					const url = buildWhatsAppUrl(p, current && current.username);
+					window.open(url, '_blank');
+				});
+				grid.appendChild(card);
+			});
+		}
+
+		document.addEventListener('change', (e) => {
+			if (e.target && e.target.id === 'filter-select') { filterMode = e.target.value; renderProducts(); }
+			if (e.target && e.target.id === 'sort-select') { sortMode = e.target.value; renderProducts(); }
+		});
+
+		// Admin promotion/demotion limited to super admin for demote
+		let searchFilter = '';
+
+		// Search functionality for admin users
+		document.addEventListener('input', (e) => {
+			if (e.target && e.target.id === 'user-search') {
+				searchFilter = e.target.value;
+				renderAdminUsers();
+			}
+		});
+		function renderAdminUsers() {
+			const adminList = document.getElementById('admin-list');
+			const userList = document.getElementById('user-list');
+			adminList.innerHTML = '';
+			userList.innerHTML = '';
+			
+			const accounts = accountsCache;
+			const current = state.user;
+			const isSuperAdmin = current && current.username === 'admin';
+			
+			// Filter accounts based on search
+			const filteredAccounts = accounts.filter(acc => 
+				!searchFilter || acc.username.toLowerCase().includes(searchFilter.toLowerCase())
+			);
+			
+			// Separate admins and users
+			const admins = filteredAccounts.filter(acc => acc.is_admin);
+			const users = filteredAccounts.filter(acc => !acc.is_admin);
+			
+			// Render admins
+			admins.forEach(acc => {
+				const li = document.createElement('li');
+				const meta = [];
+				if (acc.username === 'admin') meta.push('super-admin');
+				else meta.push('admin');
+				if (acc.is_blocked) meta.push('blocked');
+				
+				// Super admin can demote other admins, but not the main admin
+				const canDemote = isSuperAdmin && acc.username !== 'admin';
+				const canBlock = false; // Admins cannot be blocked
+				const canDelete = isSuperAdmin && acc.username !== 'admin';
+				
+				const demoteBtn = canDemote ? `<button class=\"btn secondary\" data-act=\"demote\" data-user=\"${acc.username}\">Demote</button>` : '';
+				const delBtn = canDelete ? `<button class=\"btn secondary\" data-act=\"delete\" data-user=\"${acc.username}\">Delete</button>` : '';
+				
+				li.innerHTML = `
+					<div class=\"row\" style=\"justify-content:space-between;\">
+						<div><strong>${acc.username}</strong> <span class=\"muted\">${meta.join(', ')}</span></div>
+						<div class=\"row\">${demoteBtn}${delBtn}</div>
+					</div>
+				`;
+				
+				const demoteEl = li.querySelector('[data-act="demote"]');
+				const deleteEl = li.querySelector('[data-act="delete"]');
+				if (demoteEl) demoteEl.addEventListener('click', () => toggleAdminRole(acc.id, false));
+				if (deleteEl) deleteEl.addEventListener('click', () => deleteUser(acc.id));
+				adminList.appendChild(li);
+			});
+			
+			// Render users
+			users.forEach(acc => {
+				const li = document.createElement('li');
+				const meta = [];
+				if (acc.is_blocked) meta.push('blocked');
+				
+				// Super admin can promote users to admin, block/unblock, and delete
+				// Regular admins can only block/unblock and delete users
+				const canPromote = isSuperAdmin;
+				const canBlock = true;
+				const canDelete = true;
+				
+				const promoteBtn = canPromote ? `<button class=\"btn secondary\" data-act=\"promote\" data-user=\"${acc.username}\">Make Admin</button>` : '';
+				const blockBtn = canBlock ? `<button class=\"btn secondary\" data-act=\"block\" data-user=\"${acc.username}\">${acc.is_blocked ? 'Unblock' : 'Block'}</button>` : '';
+				const delBtn = canDelete ? `<button class=\"btn secondary\" data-act=\"delete\" data-user=\"${acc.username}\">Delete</button>` : '';
+				
+				li.innerHTML = `
+					<div class=\"row\" style=\"justify-content:space-between;\">
+						<div><strong>${acc.username}</strong> <span class=\"muted\">${meta.join(', ')}</span></div>
+						<div class=\"row\">${promoteBtn}${blockBtn}${delBtn}</div>
+					</div>
+				`;
+				
+				const promoteEl = li.querySelector('[data-act="promote"]');
+				const blockEl = li.querySelector('[data-act="block"]');
+				const deleteEl = li.querySelector('[data-act="delete"]');
+				if (promoteEl) promoteEl.addEventListener('click', () => toggleAdminRole(acc.id, true));
+				if (blockEl) blockEl.addEventListener('click', () => toggleBlockUser(acc.id, !acc.is_blocked));
+				if (deleteEl) deleteEl.addEventListener('click', () => deleteUser(acc.id));
+				userList.appendChild(li);
+			});
+		}
+
+		async function toggleAdminRole(userId, makeAdmin) {
+			try {
+				await api(`/admin/accounts/${userId}/admin`, {
+					method: 'POST',
+					body: JSON.stringify({ makeAdmin }),
+				});
+				await loadAccounts();
+				showNotification('Updated', makeAdmin ? 'User promoted' : 'User demoted', 'success');
+			} catch (e) {
+				showNotification('Error', e.message, 'error');
+			}
+		}
+
+		async function deleteUser(userId) {
+			if (!confirm('Delete this user?')) return;
+			try {
+				await api(`/admin/accounts/${userId}`, { method: 'DELETE' });
+				await loadAccounts();
+				showNotification('User Deleted', 'User removed.', 'success');
+			} catch (e) {
+				showNotification('Error', e.message, 'error');
+			}
+		}
+
+		document.addEventListener('submit', async (e) => {
+			if (e.target && e.target.id === 'feedback-form') {
+				e.preventDefault();
+				const msg = (document.getElementById('feedback-message')?.value || '').trim();
+				if (!msg) { 
+					showNotification('Input Required', 'Please enter a message.', 'warning');
+					return; 
+				}
+				if (!state.user) { showNotification('Login required', 'Please login first.', 'warning'); return; }
+				try {
+					await api('/feedback', { method: 'POST', body: JSON.stringify({ message: msg }) });
+					document.getElementById('feedback-message').value = '';
+					showNotification('Feedback Sent', 'Your feedback has been submitted successfully!', 'success');
+					renderFeedbackHistory(msg);
+					await loadFeedback();
+				} catch (err) {
+					showNotification('Error', err.message, 'error');
+				}
+			}
+		});
+
+		function renderFeedbackInbox() {
+			const ul = document.getElementById('feedback-inbox');
+			if (!ul) return;
+			ul.innerHTML = '';
+			const items = state.feedback || [];
+			if (items.length === 0) { ul.innerHTML = '<li class="muted">No feedback.</li>'; return; }
+			items.forEach(item => {
+				const li = document.createElement('li');
+				li.innerHTML = `
+					<div class="row" style="justify-content:space-between;">
+						<div style="${item.unread ? 'font-weight:bold;' : ''}">
+							${item.by || 'user'}: ${item.message}
+						</div>
+						<div class="row">
+							<button class="btn secondary" data-act="mark" data-id="${item.id}">${item.unread ? 'Mark Read' : 'Mark Unread'}</button>
+							<button class="btn secondary" data-act="del" data-id="${item.id}">Delete</button>
+						</div>
+					</div>
+				`;
+				li.querySelector('[data-act="mark"]').addEventListener('click', () => {
+					markFeedback(item.id, !item.unread);
+				});
+				li.querySelector('[data-act="del"]').addEventListener('click', () => {
+					deleteFeedback(item.id);
+				});
+				ul.appendChild(li);
+			});
+		}
+
+		async function loadFeedback() {
+			if (!state.user?.is_admin) return;
+			try {
+				state.feedback = await api('/feedback');
+				renderFeedbackInbox();
+			} catch (e) {
+				console.error(e);
+			}
+		}
+
+		async function markFeedback(id, unread) {
+			try {
+				await api(`/feedback/${id}/mark`, { method: 'PATCH', body: JSON.stringify({ unread }) });
+				await loadFeedback();
+			} catch (e) { showNotification('Error', e.message, 'error'); }
+		}
+
+		async function deleteFeedback(id) {
+			try {
+				await api(`/feedback/${id}`, { method: 'DELETE' });
+				await loadFeedback();
+			} catch (e) { showNotification('Error', e.message, 'error'); }
+		}
+
+		function renderFeedbackHistory(latestMessage) {
+			const ul = document.getElementById('feedback-history');
+			if (!ul) return;
+			const item = document.createElement('li');
+			item.textContent = `${state.user?.username || 'you'}: ${latestMessage}`;
+			ul.prepend(item);
+		}
+
+		function renderAdminProducts() {
+			const ul = document.getElementById('admin-products');
+			if (!ul) return;
+			ul.innerHTML = '';
+			const items = state.products || [];
+			if (items.length === 0) { ul.innerHTML = '<li class="muted">No products.</li>'; return; }
+			items.forEach(p => {
+				const li = document.createElement('li');
+				li.innerHTML = `
+					<div class="row" style="justify-content:space-between;">
+						<div>${p.name} (${p.platform}) - ${formatPrice(Number(p.price))}</div>
+						<button class="btn secondary" data-act="remove" data-id="${p.id}">Remove</button>
+					</div>
+				`;
+				li.querySelector('[data-act="remove"]').addEventListener('click', async () => {
+					try {
+						await api(`/products/${p.id}`, { method: 'DELETE' });
+						showNotification('Product Removed', 'Product has been removed successfully!', 'success');
+						await loadProducts();
+					} catch (e) {
+						showNotification('Error', e.message, 'error');
+					}
+				});
+				ul.appendChild(li);
+			});
+		}
+
+		// Helper function for in-app toasts (replaces browser notifications)
+		function showNotification(title, message, type = 'info') {
+			// Ensure styles
+			if (!document.getElementById('toast-styles')) {
+				const style = document.createElement('style');
+				style.id = 'toast-styles';
+				style.textContent = `
+					#toast-container { position: fixed; top: 16px; right: 16px; display: flex; flex-direction: column; gap: 8px; z-index: 9999; }
+					.toast { min-width: 260px; max-width: 360px; padding: 12px 14px; border-radius: 10px; color: #fff; box-shadow: 0 10px 25px rgba(0,0,0,.2); background: #333; opacity: 0; transform: translateY(-10px); transition: opacity .2s ease, transform .2s ease; }
+					.toast.show { opacity: 1; transform: translateY(0); }
+					.toast .toast-title { font-weight: 700; margin-bottom: 4px; }
+					.toast.info { background: #2d6cdf; }
+					.toast.success { background: #2aa775; }
+					.toast.warning { background: #d89a00; }
+					.toast.error { background: #d4383a; }
+					.toast-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+					.toast-close { margin-left: 8px; cursor: pointer; opacity: .8; }
+				`;
+				document.head.appendChild(style);
+			}
+
+			// Ensure container
+			let container = document.getElementById('toast-container');
+			if (!container) {
+				container = document.createElement('div');
+				container.id = 'toast-container';
+				document.body.appendChild(container);
+			}
+
+			// Create toast
+			const toast = document.createElement('div');
+			toast.className = `toast ${type}`;
+			toast.innerHTML = `
+				<div class="toast-row">
+					<div>
+						<div class="toast-title">${title}</div>
+						<div class="toast-message">${message}</div>
+					</div>
+					<div class="toast-close" aria-label="Close">✕</div>
+				</div>
+			`;
+			container.appendChild(toast);
+			requestAnimationFrame(() => toast.classList.add('show'));
+
+			// Auto dismiss
+			const removeToast = () => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 200); };
+			setTimeout(removeToast, 3500);
+			toast.querySelector('.toast-close').addEventListener('click', removeToast);
+
+			// Log for debugging
+			console.log(`${type.toUpperCase()}: ${title} - ${message}`);
+		}
+</script>
+</body>
+
+</html>
